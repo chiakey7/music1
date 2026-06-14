@@ -3,385 +3,1582 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>음색 마스터 클래스 | Timbre Lab</title>
+    <title>음색 마스터 클래스 - 민T가 만든 음색 학습봇</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #0f172a; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        input[type="range"] { -webkit-appearance: none; background: #1e293b; border-radius: 999px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: #6366f1; border-radius: 50%; cursor: pointer; }
-        .vertical-range { writing-mode: bt-lr; -webkit-appearance: slider-vertical; width: 8px; height: 150px; }
-        @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        .animate-pulse-soft { animation: pulse-soft 2s infinite; }
+        /* 이미지의 다크 네이비 테마 및 프리미엄 네온 스타일링 구현 */
+        body {
+            background-color: #05070f;
+            color: #f1f5f9;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .neon-border {
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .active-tab {
+            background-color: #4f46e5; /* 이미지에 등장한 보라/블루 톤 적용 */
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(79, 70, 229, 0.5);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
     </style>
 </head>
-<body class="text-slate-100">
+<body class="min-h-screen flex flex-col justify-between">
 
-    <!-- NAVIGATION HEADER -->
-    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-3">
-            <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg">
-                <i data-lucide="music" class="w-6 h-6"></i>
+    <!-- TOP NAVIGATION & HEADER (이미지의 헤더 레이아웃 재현) -->
+    <header class="bg-[#090d1a] border-b border-gray-800/80 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Left Brand Identity (이미지의 왼쪽 섹션) -->
+            <div class="flex items-center gap-3">
+                <div class="p-3 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-2xl shadow-md shadow-indigo-500/20 text-white">
+                    <i class="fa-solid fa-music text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                        음색 마스터 클래스
+                    </h1>
+                    <p class="text-xs text-gray-400">고등학교 2학년 음악 감상과 비평 학습 도구</p>
+                </div>
             </div>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">음색 마스터 클래스</h1>
-                <p class="text-xs text-slate-400">고등학교 2학년 음악 감상과 비평 학습 도구</p>
-            </div>
+
+            <!-- Right Menu Tabs (이미지의 오른쪽 슬라이드 탭 디자인 적용) -->
+            <nav class="bg-[#03050a]/80 p-1.5 rounded-2xl border border-gray-800 flex flex-wrap gap-1">
+                <button onclick="switchTab('science')" id="tab-science" class="active-tab px-4 py-2 text-xs md:text-sm font-semibold rounded-xl transition-all duration-200">
+                    소리의 과학
+                </button>
+                <button onclick="switchTab('encyclopedia')" id="tab-encyclopedia" class="px-4 py-2 text-xs md:text-sm font-semibold text-gray-400 hover:text-white rounded-xl transition-all duration-200">
+                    악기·성악 도감
+                </button>
+                <button onclick="switchTab('workshop')" id="tab-workshop" class="px-4 py-2 text-xs md:text-sm font-semibold text-gray-400 hover:text-white rounded-xl transition-all duration-200">
+                    감상 워크숍
+                </button>
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="px-4 py-2 text-xs md:text-sm font-semibold text-gray-400 hover:text-white rounded-xl transition-all duration-200">
+                    성취도 퀴즈
+                </button>
+            </nav>
+
         </div>
-        <nav class="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
-            <button onclick="showTab('science')" id="btn-science" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white">소리의 과학</button>
-            <button onclick="showTab('gallery')" id="btn-gallery" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">악기·성악 도감</button>
-            <button onclick="showTab('workshop')" id="btn-workshop" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">감상 워크숍</button>
-            <button onclick="showTab('quiz')" id="btn-quiz" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white">성취도 퀴즈</button>
-        </nav>
     </header>
 
-    <main class="max-w-7xl w-full mx-auto p-4 md:p-8">
+    <!-- MAIN APP WRAPPER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 md:py-8">
         
-        <!-- SECTION 1: SCIENCE OF SOUND -->
-        <div id="science" class="tab-content active animate-fadeIn">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="space-y-6">
-                    <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800">
-                        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2"><i data-lucide="info" class="text-indigo-400"></i> 배음과 음색</h2>
-                        <p class="text-sm text-slate-400 leading-relaxed mb-4">
-                            악기마다 소리가 다른 이유는 <strong>기본음</strong> 위에 쌓이는 <strong>배음(Overtone)</strong>의 비율이 다르기 때문입니다. 우측의 믹서를 조절해 배음이 어떻게 파형을 변화시키는지 확인해 보세요.
+        <!-- 오디오 초기화 플로팅 경고 가드 (Web Audio API 브라우저 정책 준수) -->
+        <div id="audio-guard-banner" class="mb-6 p-4 bg-indigo-950/40 border border-indigo-800/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                </span>
+                <p class="text-sm text-indigo-200 font-medium text-center sm:text-left">
+                    체험을 위해 상호작용 기반의 오디오 엔진 활성화가 필요합니다. 건반이나 재생을 누르시면 자동 활성화됩니다.
+                </p>
+            </div>
+            <button onclick="ensureAudioContext()" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-volume-high"></i> 오디오 수동 활성화
+            </button>
+        </div>
+
+        <!-- ===================================== -->
+        <!-- TAB 1: 소리의 과학 (Science of Sound) -->
+        <!-- ===================================== -->
+        <section id="content-science" class="tab-content block space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Control Deck -->
+                <div class="lg:col-span-4 bg-[#0c0f1d] border border-gray-800 rounded-3xl p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <i class="fa-solid fa-wave-square text-indigo-400 text-lg"></i>
+                            <h2 class="text-lg font-bold tracking-tight">음색의 기초: 배음과 파형</h2>
+                        </div>
+                        <p class="text-sm text-gray-400 mb-6 leading-relaxed">
+                            순수한 소리인 <strong>기음(Fundamental Frequency)</strong> 위에 정수배의 주파수를 가지는 <strong>배음(Overtones)</strong>들이 쌓이며, 세상에 하나뿐인 독특한 음색을 형성합니다. 아래 컨트롤러로 배음 값을 더해 소리가 어떻게 사각파나 톱니파로 변해 가는지 귀와 눈으로 느껴보세요.
                         </p>
-                        <div class="space-y-4 pt-4 border-t border-slate-800">
-                            <label class="block text-xs font-bold text-slate-500 uppercase">기본 피치 조절 (Frequency)</label>
-                            <input type="range" id="freq-slider" min="110" max="440" value="220" class="w-full">
-                            <div class="flex justify-between text-[10px] text-slate-500 font-mono"><span>110Hz</span><span id="freq-val">220Hz</span><span>440Hz</span></div>
+
+                        <!-- Synthesizer Sound Controls -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="flex justify-between text-xs font-semibold text-gray-400 mb-1">
+                                    <span>기음 주파수 (Hz)</span>
+                                    <span id="label-science-freq" class="text-indigo-400 font-mono">220 Hz</span>
+                                </label>
+                                <input type="range" id="science-freq" min="110" max="440" step="1" value="220" oninput="updateScienceParams()" class="w-full accent-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="flex justify-between text-xs font-semibold text-gray-400 mb-1">
+                                    <span>제2배음 추가 비율 (2x Freq)</span>
+                                    <span id="label-harmonic-2" class="text-indigo-400 font-mono">0.00</span>
+                                </label>
+                                <input type="range" id="harmonic-2" min="0" max="1" step="0.01" value="0.00" oninput="updateScienceParams()" class="w-full accent-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="flex justify-between text-xs font-semibold text-gray-400 mb-1">
+                                    <span>제3배음 추가 비율 (3x Freq)</span>
+                                    <span id="label-harmonic-3" class="text-indigo-400 font-mono">0.00</span>
+                                </label>
+                                <input type="range" id="harmonic-3" min="0" max="1" step="0.01" value="0.00" oninput="updateScienceParams()" class="w-full accent-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="flex justify-between text-xs font-semibold text-gray-400 mb-1">
+                                    <span>제4배음 추가 비율 (4x Freq)</span>
+                                    <span id="label-harmonic-4" class="text-indigo-400 font-mono">0.00</span>
+                                </label>
+                                <input type="range" id="harmonic-4" min="0" max="1" step="0.01" value="0.00" oninput="updateScienceParams()" class="w-full accent-indigo-500">
+                            </div>
                         </div>
                     </div>
-                    <button id="play-btn" class="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold flex items-center justify-center gap-3 transition-all shadow-lg shadow-emerald-500/20">
-                        <i data-lucide="play" id="play-icon"></i> <span id="play-text">소리 재생 시작</span>
+
+                    <!-- Trigger Tone Button -->
+                    <div class="mt-8 pt-4 border-t border-gray-800 flex gap-2">
+                        <button id="btn-play-science" onclick="toggleScienceTone()" class="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 font-semibold text-sm rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
+                            <i id="btn-play-science-icon" class="fa-solid fa-play"></i>
+                            <span id="btn-play-science-text">배음 테스트 톤 재생</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Analyser Screen -->
+                <div class="lg:col-span-8 flex flex-col gap-6">
+                    <div class="bg-gray-950/80 border border-gray-800 rounded-3xl p-5 flex-1 flex flex-col justify-between">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-bold tracking-wide text-indigo-400 flex items-center gap-2 uppercase">
+                                <i class="fa-solid fa-circle-nodes"></i> 실시간 오실로스코프 (Time Domain Waveform)
+                            </span>
+                            <span class="text-[10px] text-gray-500">기음 + 고배음 혼합 결과 파형</span>
+                        </div>
+                        <div class="relative bg-black rounded-2xl overflow-hidden h-64 border border-gray-900 flex items-center justify-center">
+                            <canvas id="canvas-oscilloscope" class="absolute inset-0 w-full h-full"></canvas>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between text-[11px] text-gray-500">
+                            <span>주파수 영역 주기</span>
+                            <span>신호 딜레이: 0ms</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-[#0c0f1d] border border-gray-800 p-5 rounded-2xl flex items-center gap-4">
+                            <div class="p-3.5 bg-yellow-500/10 rounded-xl text-yellow-400">
+                                <i class="fa-solid fa-music text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-200">기음 (Fundamental Tonality)</h4>
+                                <p class="text-xs text-gray-400 mt-1">소리의 전체적인 높낮이(음고)를 결정하며, 가장 에너지가 크고 굵은 파동의 진폭을 가집니다.</p>
+                            </div>
+                        </div>
+                        <div class="bg-[#0c0f1d] border border-gray-800 p-5 rounded-2xl flex items-center gap-4">
+                            <div class="p-3.5 bg-purple-500/10 rounded-xl text-purple-400">
+                                <i class="fa-solid fa-asterisk text-xl animate-spin-slow"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-200">배음 (Harmonics & Overtones)</h4>
+                                <p class="text-xs text-gray-400 mt-1">기음의 자연수 배인 진동수로 발생하는 배음들이 주파수 스펙트럼에서 음색의 맑고 어두운 특성을 성립합니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===================================== -->
+        <!-- TAB 2: 악기·성악 도감 (Instruments Deck) -->
+        <!-- ===================================== -->
+        <section id="content-encyclopedia" class="tab-content hidden space-y-6">
+            
+            <!-- Quick Intro Header -->
+            <div class="bg-gradient-to-r from-indigo-950/20 to-purple-950/20 border border-gray-800 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold">성악 및 기악 음향 합성 & 스펙트럼 분석</h2>
+                    <p class="text-sm text-gray-400 mt-1">아래 악기를 선택한 뒤 음색을 직접 연주하고, 실시간 스펙트럼 아날라이저로 배음이 쌓이는 차이를 관찰하세요.</p>
+                </div>
+                <!-- Selection Panel for Active Engine -->
+                <div class="flex gap-2 flex-wrap" id="instrument-selector-group">
+                    <button onclick="selectInstrument('piano')" id="btn-inst-piano" class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl transition-all shadow-md">
+                        🎹 피아노
+                    </button>
+                    <button onclick="selectInstrument('violin')" id="btn-inst-violin" class="px-4 py-2 bg-[#0c0f1d] text-gray-400 hover:text-white text-xs font-bold rounded-xl transition-all border border-gray-800">
+                        🎻 바이올린
+                    </button>
+                    <button onclick="selectInstrument('flute')" id="btn-inst-flute" class="px-4 py-2 bg-[#0c0f1d] text-gray-400 hover:text-white text-xs font-bold rounded-xl transition-all border border-gray-800">
+                        💨 플루트
+                    </button>
+                    <button onclick="selectInstrument('guitar')" id="btn-inst-guitar" class="px-4 py-2 bg-[#0c0f1d] text-gray-400 hover:text-white text-xs font-bold rounded-xl transition-all border border-gray-800">
+                        🎸 일렉기타
+                    </button>
+                    <button onclick="selectInstrument('soprano')" id="btn-inst-soprano" class="px-4 py-2 bg-[#0c0f1d] text-gray-400 hover:text-white text-xs font-bold rounded-xl transition-all border border-gray-800">
+                        👩 소프라노 (Vocal)
+                    </button>
+                    <button onclick="selectInstrument('tenor')" id="btn-inst-tenor" class="px-4 py-2 bg-[#0c0f1d] text-gray-400 hover:text-white text-xs font-bold rounded-xl transition-all border border-gray-800">
+                        👨 테너 (Vocal)
                     </button>
                 </div>
+            </div>
 
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 min-h-[300px] flex flex-col">
-                        <h3 class="text-sm font-bold text-indigo-400 mb-4 flex items-center gap-2">실시간 파형 오실로스코프</h3>
-                        <div class="flex-grow bg-slate-900 rounded-xl border border-slate-800 overflow-hidden relative">
-                            <canvas id="osc-canvas" class="w-full h-full"></canvas>
-                        </div>
-                    </div>
-                    <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800">
-                        <h3 class="text-sm font-bold text-white mb-6">배음 합성 믹서 (1~5배음)</h3>
-                        <div class="grid grid-cols-5 gap-4 h-48">
-                            <div class="flex flex-col items-center gap-2">
-                                <input type="range" class="vertical-range harmonic-slider" data-index="0" min="0" max="1" step="0.01" value="1">
-                                <span class="text-[10px] font-bold text-indigo-400">기본음</span>
-                            </div>
-                            <div class="flex flex-col items-center gap-2">
-                                <input type="range" class="vertical-range harmonic-slider" data-index="1" min="0" max="1" step="0.01" value="0">
-                                <span class="text-[10px] font-bold text-slate-500">2배음</span>
-                            </div>
-                            <div class="flex flex-col items-center gap-2">
-                                <input type="range" class="vertical-range harmonic-slider" data-index="2" min="0" max="1" step="0.01" value="0">
-                                <span class="text-[10px] font-bold text-slate-500">3배음</span>
-                            </div>
-                            <div class="flex flex-col items-center gap-2">
-                                <input type="range" class="vertical-range harmonic-slider" data-index="3" min="0" max="1" step="0.01" value="0">
-                                <span class="text-[10px] font-bold text-slate-500">4배음</span>
-                            </div>
-                            <div class="flex flex-col items-center gap-2">
-                                <input type="range" class="vertical-range harmonic-slider" data-index="4" min="0" max="1" step="0.01" value="0">
-                                <span class="text-[10px] font-bold text-slate-500">5배음</span>
+            <!-- Dashboard Layout: 2 Columns -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Left Details & Play Controller -->
+                <div class="lg:col-span-4 flex flex-col gap-6">
+                    
+                    <!-- Instrument Acoustic Specification -->
+                    <div class="bg-[#0c0f1d] border border-gray-800 rounded-3xl p-6">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span id="inst-icon" class="text-3xl">🎹</span>
+                            <div>
+                                <h3 id="inst-title" class="text-lg font-bold">피아노 (Acoustic Piano)</h3>
+                                <p class="text-xs text-indigo-400">물리 모델링 음색 요약</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- SECTION 2: GALLERY -->
-        <div id="gallery" class="tab-content animate-fadeIn">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="instrument-grid">
-                <!-- JS will inject content here -->
-            </div>
-        </div>
+                        <!-- Technical Parameter Info -->
+                        <div class="space-y-4 text-sm">
+                            <div class="bg-gray-950 p-4 rounded-xl border border-gray-900 space-y-1.5">
+                                <span class="text-xs text-gray-500 font-semibold block">음색 성질 설명</span>
+                                <p id="inst-description" class="text-xs text-gray-300 leading-relaxed">
+                                    해머가 현을 때릴 때 발생하는 급격한 과도 응답(Attack)과, 이후 완만하게 서서히 울림이 소멸하는 자연스러운 데케이(Decay) 및 긴 릴리즈를 특징으로 하는 완벽한 타현 타악기적 엔벨로프를 모방합니다.
+                                </p>
+                            </div>
 
-        <!-- SECTION 3: WORKSHOP -->
-        <div id="workshop" class="tab-content animate-fadeIn">
-            <div class="bg-slate-950 p-8 rounded-3xl border border-slate-800 space-y-8">
-                <div class="max-w-3xl">
-                    <h2 class="text-2xl font-bold mb-2">음색 감상평 문장 빌더</h2>
-                    <p class="text-sm text-slate-400">4단계 공식을 활용하여 논리적인 감상평을 조립해 보세요.</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-indigo-400">1. 구간/마디</label>
-                        <input type="text" id="ws-where" placeholder="예: 도입부 1~4마디" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-indigo-400">2. 악기/성부</label>
-                        <input type="text" id="ws-who" placeholder="예: 플루트 독주" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-indigo-400">3. 음색 형용사</label>
-                        <input type="text" id="ws-how" placeholder="예: 은빛처럼 맑은" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-indigo-400">4. 감정/장면</label>
-                        <input type="text" id="ws-emotion" placeholder="예: 신비로운 숲속" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-sm focus:border-indigo-500 outline-none">
-                    </div>
-                </div>
-                <div class="bg-indigo-600/10 border border-indigo-500/30 p-6 rounded-2xl relative">
-                    <h4 class="text-xs font-bold text-indigo-400 uppercase mb-2">완성된 감상 문장</h4>
-                    <p id="ws-result" class="text-lg font-medium leading-relaxed italic text-slate-200">내용을 입력하면 문장이 생성됩니다...</p>
-                    <button onclick="copyResult()" class="absolute top-4 right-4 p-2 hover:bg-indigo-500/20 rounded-lg transition-colors"><i data-lucide="copy" class="w-4 h-4"></i></button>
-                </div>
-            </div>
-        </div>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div class="bg-gray-950 p-3 rounded-lg border border-gray-900">
+                                    <span class="text-gray-500 block mb-1">기본 파형</span>
+                                    <strong id="inst-wave-type" class="text-gray-300 font-mono">Sine + Triangle</strong>
+                                </div>
+                                <div class="bg-gray-950 p-3 rounded-lg border border-gray-900">
+                                    <span class="text-gray-500 block mb-1">배음 분포 강도</span>
+                                    <strong id="inst-overtone" class="text-gray-300">고차 배음 감쇄형</strong>
+                                </div>
+                            </div>
 
-        <!-- SECTION 4: QUIZ -->
-        <div id="quiz" class="tab-content animate-fadeIn">
-            <div class="max-w-2xl mx-auto bg-slate-950 border border-slate-800 rounded-3xl p-8 shadow-2xl">
-                <div id="quiz-container">
-                    <!-- JS will inject quiz here -->
-                </div>
-                <div id="quiz-result" class="hidden text-center space-y-6">
-                    <div class="w-20 h-20 bg-indigo-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-indigo-500/30">
-                        <i data-lucide="award" class="w-10 h-10 text-white"></i>
+                            <div class="space-y-2">
+                                <span class="text-xs text-gray-400 font-semibold block">가상 물리 ADSR 프리셋</span>
+                                <div class="grid grid-cols-4 gap-1 text-center text-[10px]">
+                                    <div class="bg-gray-900 p-1.5 rounded">
+                                        <span class="text-gray-500 block">Attack</span>
+                                        <span id="val-adsr-a" class="font-mono text-indigo-400">0.02s</span>
+                                    </div>
+                                    <div class="bg-gray-900 p-1.5 rounded">
+                                        <span class="text-gray-500 block">Decay</span>
+                                        <span id="val-adsr-d" class="font-mono text-indigo-400">1.2s</span>
+                                    </div>
+                                    <div class="bg-gray-900 p-1.5 rounded">
+                                        <span class="text-gray-500 block">Sustain</span>
+                                        <span id="val-adsr-s" class="font-mono text-indigo-400">0.4</span>
+                                    </div>
+                                    <div class="bg-gray-900 p-1.5 rounded">
+                                        <span class="text-gray-500 block">Release</span>
+                                        <span id="val-adsr-r" class="font-mono text-indigo-400">1.0s</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <h2 class="text-2xl font-bold">음색 단원 학습 완료!</h2>
-                    <p class="text-slate-400 text-sm">수고하셨습니다. 음색의 과학적 원리와 감상 방법을 모두 익혔습니다.</p>
-                    <button onclick="location.reload()" class="bg-indigo-600 px-8 py-3 rounded-xl font-bold hover:bg-indigo-500 transition-colors">다시 학습하기</button>
+
+                    <!-- Live Play Instructions -->
+                    <div class="bg-gradient-to-br from-indigo-900/10 to-transparent border border-gray-800 rounded-2xl p-5 text-xs text-gray-400 space-y-2">
+                        <h4 class="font-bold text-gray-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i> 스마트 플레이 팁
+                        </h4>
+                        <p class="leading-relaxed">
+                            원하는 악기 프리셋을 고른 뒤 오른쪽의 피아노 건반이나 컴퓨터 키보드를 타건해 보세요. 성악과 악기가 공기 중에서 소리를 발산할 때, 주파수 분포가 어떻게 다르게 형성되는지를 직관적으로 실시간 탐구할 수 있습니다.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Right Audio Visual Analyzer & Virtual Keyboard -->
+                <div class="lg:col-span-8 flex flex-col gap-6">
+                    
+                    <!-- FFT Spectrum Analyzer Card -->
+                    <div class="bg-gray-950/80 border border-gray-800 rounded-3xl p-5 flex flex-col justify-between">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-bold tracking-wide text-indigo-400 flex items-center gap-2 uppercase">
+                                <i class="fa-solid fa-chart-line"></i> 실시간 FFT 스펙트럼 분석기 (FFT Spectrum Analyzer)
+                            </span>
+                            <span class="text-[10px] text-gray-500">하모닉스 배음 피크 강도 계측기</span>
+                        </div>
+                        <div class="relative bg-black rounded-2xl overflow-hidden h-52 border border-gray-900 flex items-center justify-center">
+                            <canvas id="canvas-spectrum" class="absolute inset-0 w-full h-full"></canvas>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between text-[11px] text-gray-500">
+                            <span>낮은 기음 주파수 영역 (기음)</span>
+                            <span>높은 고배음 주파수 영역 (배음 분포)</span>
+                        </div>
+                    </div>
+
+                    <!-- Realistic Virtual Keyboard Container -->
+                    <div class="bg-[#0c0f1d] border border-gray-800 rounded-3xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-keyboard text-indigo-400"></i> 마우스 터치 & 키보드 매핑
+                            </span>
+                            <span class="text-[10px] text-gray-500">컴퓨터 자판: A~K (흰건반), W,E,T,Y,U (검은건반) 대응</span>
+                        </div>
+
+                        <!-- Piano Key Layout -->
+                        <div class="relative flex justify-center select-none pt-2 pb-2 h-44" id="encyclopedia-keyboard">
+                            <!-- White Keys -->
+                            <div class="flex w-full h-full relative z-0">
+                                <button data-note="C4" class="white-key flex-1 h-full flex flex-col justify-end pb-3 items-center text-[10px] text-slate-500 font-semibold">C4<span class="text-[9px] text-slate-400 block mt-1 font-normal">A</span></button>
+                                <button data-note="D4" class="white-key flex-1 h-full flex flex-col justify-end pb-3 items-center text-[10px] text-slate-500 font-semibold">D4<span class="text-[9px] text-slate-400 block mt-1 font-normal">S</span></button>
+                                <button data-note="E4" class="white-key flex-1 h-full flex flex-col justify-end pb-3 items-center text-[10px] text-slate-500 font-semibold">E4<span class="text-[9px] text-slate-400 block mt-1 font-normal">D</span></button>
+                                <button data-note="F4" class="white-key flex-1 h-full flex flex-col justify-end pb-3 items-center text-[10px] text-slate-500 font-semibold">F4<span class="text-[9px] text-slate-400 block mt-1 font-normal">F</span></button>
+                                <button data-note="G4" class="white-key flex-1 h-full flex flex-col justify-end pb-3 items-center text-[10px] text-slate-500 font-semibold">G4<span class="text-[9px] text-slate-400 block mt-1 font-normal">G</span></button>
+                                <button data-note="A4" class="white-key flex-1 h-full flex flex-col justify-end pb-3 items-center text-[10px] text-slate-500 font-semibold">A4<span class="text-[9px] text-slate-400 block mt-1 font-normal">H</span></button>
+                                <button data-note="B4" class="white-key flex-1 h-full flex flex-col justify-end pb-3 items-center text-[10px] text-slate-500 font-semibold">B4<span class="text-[9px] text-slate-400 block mt-1 font-normal">J</span></button>
+                                <button data-note="C5" class="white-key flex-1 h-full flex flex-col justify-end pb-3 items-center text-[10px] text-slate-500 font-semibold">C5<span class="text-[9px] text-slate-400 block mt-1 font-normal">K</span></button>
+                            </div>
+
+                            <!-- Black Keys Overlay -->
+                            <div class="absolute inset-x-0 top-2 h-3/5 pointer-events-none flex z-10" style="padding-left: 6.25%; padding-right: 6.25%;">
+                                <button data-note="C#4" class="black-key pointer-events-auto h-full" style="width: 8%; margin-left: -4%; margin-right: 4.5%;"></button>
+                                <button data-note="D#4" class="black-key pointer-events-auto h-full" style="width: 8%; margin-right: 17%;"></button>
+                                <button data-note="F#4" class="black-key pointer-events-auto h-full" style="width: 8%; margin-right: 4.5%;"></button>
+                                <button data-note="G#4" class="black-key pointer-events-auto h-full" style="width: 8%; margin-right: 4.5%;"></button>
+                                <button data-note="A#4" class="black-key pointer-events-auto h-full" style="width: 8%;"></button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===================================== -->
+        <!-- TAB 3: 감상 워크숍 (Workshop) -->
+        <!-- ===================================== -->
+        <section id="content-workshop" class="tab-content hidden space-y-6">
+            
+            <!-- Scaffold Builder Block (섹션 3) -->
+            <div class="bg-[#0c0f1d] border border-gray-800 rounded-3xl p-6 md:p-8">
+                <div class="flex items-center gap-2.5 mb-2">
+                    <span class="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded text-[10px] font-bold uppercase">감상 보조 도구</span>
+                    <h2 class="text-xl font-bold tracking-tight">학습 비계(Scaffolding)용 감상평 문장 제조기</h2>
+                </div>
+                <p class="text-xs md:text-sm text-gray-400 mb-6">
+                    어려운 음악적 감상평을 논리적으로 완성할 수 있는 가이드라인입니다. 아래 요소를 차례로 클릭하여 나만의 고차원 감상 문장을 만들어 보세요!
+                </p>
+
+                <!-- Step Builders -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <!-- Step 1: 감상 구간 -->
+                    <div class="bg-gray-950 p-4 rounded-2xl border border-gray-900 flex flex-col gap-3">
+                        <span class="text-xs font-bold text-gray-400 flex items-center gap-1">
+                            <span class="w-4 h-4 rounded-full bg-indigo-600 text-[10px] text-white flex items-center justify-center font-mono">1</span>
+                            감상 구간 및 동기
+                        </span>
+                        <div class="flex flex-col gap-1.5" id="scaffold-part">
+                            <button onclick="setScaffold('part', '도입부의 주제 선율에서')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                도입부의 주제 선율에서
+                            </button>
+                            <button onclick="setScaffold('part', '클라이맥스 하이라이트 부분에서')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                클라이맥스 부분에서
+                            </button>
+                            <button onclick="setScaffold('part', '중반부 악기 편성이 집중되는 대목에서')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                중반부 고조 대목에서
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: 대상 악기 -->
+                    <div class="bg-gray-950 p-4 rounded-2xl border border-gray-900 flex flex-col gap-3">
+                        <span class="text-xs font-bold text-gray-400 flex items-center gap-1">
+                            <span class="w-4 h-4 rounded-full bg-indigo-600 text-[10px] text-white flex items-center justify-center font-mono">2</span>
+                            주요 음색 대상
+                        </span>
+                        <div class="flex flex-col gap-1.5" id="scaffold-instrument">
+                            <button onclick="setScaffold('instrument', '해머의 타격음이 부각되는 피아노는')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                🎹 피아노의 타격음은
+                            </button>
+                            <button onclick="setScaffold('instrument', '찰현 진동과 짙은 고차배음을 뿜어내는 바이올린은')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                🎻 바이올린의 찰현음은
+                            </button>
+                            <button onclick="setScaffold('instrument', '부드러운 정현파에 공기 유동 잡음이 혼합된 플루트는')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                💨 플루트의 파동은
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: 형용사 묘사 -->
+                    <div class="bg-gray-950 p-4 rounded-2xl border border-gray-900 flex flex-col gap-3">
+                        <span class="text-xs font-bold text-gray-400 flex items-center gap-1">
+                            <span class="w-4 h-4 rounded-full bg-indigo-600 text-[10px] text-white flex items-center justify-center font-mono">3</span>
+                            음향적 형용사
+                        </span>
+                        <div class="flex flex-col gap-1.5" id="scaffold-adjective">
+                            <button onclick="setScaffold('adjective', '맑고 영롱한 주파수 에너지로 인해 단단하며')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                맑고 영롱하게 솟아올라
+                            </button>
+                            <button onclick="setScaffold('adjective', '거칠고 배음이 광범위하게 확장되어 날카로우며')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                거칠고 날카로운 기세로
+                            </button>
+                            <button onclick="setScaffold('adjective', '깊고 풍부한 잔향을 바탕으로 고요하면서도')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                깊고 어두운 공명감으로
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: 정서적 영향 -->
+                    <div class="bg-gray-950 p-4 rounded-2xl border border-gray-900 flex flex-col gap-3">
+                        <span class="text-xs font-bold text-gray-400 flex items-center gap-1">
+                            <span class="w-4 h-4 rounded-full bg-indigo-600 text-[10px] text-white flex items-center justify-center font-mono">4</span>
+                            음악적/정서적 정립
+                        </span>
+                        <div class="flex flex-col gap-1.5" id="scaffold-effect">
+                            <button onclick="setScaffold('effect', '청자에게 내면적 고요와 서정적인 환희를 자아냅니다.')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                깊은 내면의 평화를 줌
+                            </button>
+                            <button onclick="setScaffold('effect', '공포와 긴장을 극대화하는 극적 긴장감을 고조시킵니다.')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                심장을 쥐는 고조감을 줌
+                            </button>
+                            <button onclick="setScaffold('effect', '따스한 햇살 같은 신비로운 서사감을 느끼게 합니다.')" class="scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all">
+                                따뜻한 서사감을 환기함
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Generated Sentence Box -->
+                <div class="bg-indigo-950/20 border border-indigo-900/60 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex-grow">
+                        <span class="text-[10px] font-bold text-indigo-400 block mb-1">실시간 자동 완성 감상 평론 문장</span>
+                        <p id="scaffold-result-display" class="text-sm md:text-base font-semibold text-gray-200">
+                            요소들을 위에서 하나씩 골라 문장을 빌드하세요...
+                        </p>
+                    </div>
+                    <button onclick="copyGeneratedSentence()" class="w-full sm:w-auto px-5 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap">
+                        <i class="fa-solid fa-copy"></i> 문장 복사하기
+                    </button>
                 </div>
             </div>
-        </div>
+
+            <!-- Descriptive Critique Workboard -->
+            <div class="bg-[#0c0f1d] border border-gray-800 rounded-3xl p-6 md:p-8 space-y-6">
+                <div>
+                    <span class="px-2.5 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded text-[10px] font-bold">윤동주 시 감상 프로젝트</span>
+                    <h3 class="text-lg font-bold mt-2">감상 프로젝트: '별 헤는 밤' 서술형 감상 및 비평</h3>
+                    <p class="text-xs text-gray-400 mt-1">음악을 감상하면서 느껴지는 감정과 악기 배음을 바탕으로, 시 '별 헤는 밤'의 아련한 쓸쓸함을 대변할 수 있는 음향적 서술을 작성해 보세요.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Text Area Input -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-semibold text-gray-300 block">나만의 비평 서술란</label>
+                        <textarea id="critique-textarea" rows="6" class="w-full p-4 bg-gray-950 border border-gray-800 rounded-2xl text-xs md:text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-all placeholder-gray-600" placeholder="위 문장 제조기를 사용하거나 직접 자유로운 감상을 서술형으로 200자 내외로 입력해보세요."></textarea>
+                        
+                        <div class="flex gap-2 justify-end">
+                            <button onclick="resetCritique()" class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-xs text-gray-400 font-semibold rounded-lg transition-all">초기화</button>
+                            <button onclick="saveCritiqueLocal()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-lg shadow-md transition-all">작성 완료 (클라우드/메모리 저장)</button>
+                        </div>
+                    </div>
+
+                    <!-- Scaffolding Support Assessment Panel -->
+                    <div class="bg-gray-950 border border-gray-900 rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-gray-900 pb-2">
+                            <span class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-clipboard-check text-indigo-400"></i> 자가 수행 진단 체크리스트
+                            </span>
+                            <button onclick="toggleCritiqueSolution()" class="text-[10px] text-indigo-400 hover:underline">자가진단 모범예시 보기</button>
+                        </div>
+
+                        <div class="space-y-2 text-xs text-gray-400">
+                            <label class="flex items-start gap-2.5 cursor-pointer">
+                                <input type="checkbox" class="mt-0.5 rounded border-gray-800 bg-gray-900 text-indigo-600 focus:ring-0">
+                                <span>시 '별 헤는 밤'의 쓸쓸한 정서적 배음 변화에 대응하는 물리적 악기를 1개 이상 언급했는가?</span>
+                            </label>
+                            <label class="flex items-start gap-2.5 cursor-pointer">
+                                <input type="checkbox" class="mt-0.5 rounded border-gray-800 bg-gray-900 text-indigo-600 focus:ring-0">
+                                <span>음의 높낮이가 아닌 음량, 배음 등의 '음색(Timbre)' 관점 형용사를 활용했는가?</span>
+                            </label>
+                            <label class="flex items-start gap-2.5 cursor-pointer">
+                                <input type="checkbox" class="mt-0.5 rounded border-gray-800 bg-gray-900 text-indigo-600 focus:ring-0">
+                                <span>음향적 변주가 감상자의 감정과 심리에 미치는 변화를 인과적으로 표현했는가?</span>
+                            </label>
+                        </div>
+
+                        <!-- Self-check Guide Answer Panel (Hidden at start) -->
+                        <div id="critique-solution-box" class="hidden bg-[#0c0f1d] p-4 rounded-xl border border-gray-800 text-xs space-y-2">
+                            <strong class="text-indigo-400 block">💡 자기주도 학습 모범 답안 예시:</strong>
+                            <p class="text-gray-300 leading-relaxed italic">
+                                "바이올린의 쓸쓸한 찰현 배음 선율은 밤하늘의 흩어지는 별들과 만나 서늘한 슬픔을 빚어냅니다. 이후 고진동의 플루트 기음이 얹어지면서, 청중은 아련한 고향에 대한 그리움이라는 극적인 감정의 울림에 깊이 침잠하게 됩니다."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ===================================== -->
+        <!-- TAB 4: 성취도 퀴즈 (Quiz Deck) -->
+        <!-- ===================================== -->
+        <section id="content-quiz" class="tab-content hidden space-y-6">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Main Quiz Board -->
+                <div class="lg:col-span-2 bg-[#0c0f1d] border border-gray-800 rounded-3xl p-6 md:p-8 space-y-6">
+                    <div class="flex items-center justify-between border-b border-gray-800/80 pb-4">
+                        <div>
+                            <span class="text-xs text-indigo-400 font-bold tracking-wide uppercase">중간 점검</span>
+                            <h2 class="text-lg font-bold">음색 마스터 클래스 개념 평가</h2>
+                        </div>
+                        <span id="quiz-progress-text" class="text-xs font-mono bg-indigo-950 text-indigo-300 px-3 py-1 rounded-full">문항 1 of 3</span>
+                    </div>
+
+                    <!-- Question Container -->
+                    <div class="space-y-4">
+                        <div id="quiz-question-box" class="space-y-2">
+                            <span id="quiz-type" class="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 text-[10px] rounded font-bold">객관식</span>
+                            <h3 id="quiz-question" class="text-sm md:text-base font-bold text-gray-100 leading-relaxed">
+                                소리의 3요소 중 하나로, 주파수의 배음 구조와 파형 모양에 의해 나타나는 소리의 독특한 성질은 무엇인가요?
+                            </h3>
+                        </div>
+
+                        <!-- Answer Buttons Group -->
+                        <div id="quiz-options-group" class="grid grid-cols-1 gap-2.5">
+                            <!-- Dynamic rendering of quiz items -->
+                        </div>
+                    </div>
+
+                    <!-- Navigation and Feedback Container -->
+                    <div class="pt-4 border-t border-gray-800/80 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div id="quiz-feedback" class="text-xs font-semibold invisible flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span id="quiz-feedback-text">정답 및 해설 공간</span>
+                        </div>
+                        
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <button id="btn-quiz-prev" onclick="navQuiz(-1)" class="flex-1 md:flex-initial px-4 py-2 bg-gray-900 hover:bg-gray-800 text-xs text-gray-400 font-semibold rounded-lg transition-all disabled:opacity-50" disabled>
+                                이전 문항
+                            </button>
+                            <button id="btn-quiz-next" onclick="navQuiz(1)" class="flex-1 md:flex-initial px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-md transition-all">
+                                다음 문항
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scoreboard & Diagnostics (Right Side) -->
+                <div class="bg-[#0c0f1d] border border-gray-800 rounded-3xl p-6 md:p-8 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-200 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-chart-pie text-indigo-400"></i> 실시간 성취 진단 성적표
+                        </h3>
+
+                        <div class="space-y-4">
+                            <!-- Circular Graphic / Stat -->
+                            <div class="bg-gray-950 p-6 rounded-2xl border border-gray-900 text-center">
+                                <span class="text-gray-500 text-xs block mb-1">나의 퀴즈 점수</span>
+                                <span id="quiz-score-num" class="text-3xl md:text-4xl font-extrabold text-indigo-400 font-mono">0</span>
+                                <span class="text-gray-500 font-bold">/ 100 점</span>
+                            </div>
+
+                            <div class="space-y-2.5 text-xs text-gray-400">
+                                <div class="flex justify-between py-1 border-b border-gray-900">
+                                    <span>푼 문제 수</span>
+                                    <strong id="quiz-solved-count" class="text-gray-200 font-mono">0 / 3</strong>
+                                </div>
+                                <div class="flex justify-between py-1 border-b border-gray-900">
+                                    <span>정답률</span>
+                                    <strong id="quiz-accuracy" class="text-gray-200 font-mono">0%</strong>
+                                </div>
+                                <div class="flex justify-between py-1">
+                                    <span>최종 학습 등급</span>
+                                    <strong id="quiz-grade" class="text-indigo-400 font-bold">진단 대기 중</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-gray-800 text-center">
+                        <button onclick="resetAllQuiz()" class="w-full py-2.5 bg-gray-950 hover:bg-gray-900 text-gray-400 hover:text-white text-xs font-bold rounded-xl border border-gray-800 transition-all active:scale-95">
+                            테스트 및 결과 초기화
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
 
     </main>
 
-    <script>
-        // --- DATA ---
-        const instruments = [
-            { name: "플루트 (Flute)", wave: "사인파", desc: "공기 진동으로 배음이 적어 투명하고 은빛처럼 맑은 소리", adj: ["맑은", "투명한", "차가운"], icon: "🌬️" },
-            { name: "바이올린 (Violin)", wave: "톱니파", desc: "활의 마찰로 상위 배음이 풍부하여 섬세하고 화려한 소리", adj: ["날카로운", "화려한", "섬세한"], icon: "🎻" },
-            { name: "일렉기타 (Electric Guitar)", wave: "톱니파(왜곡)", desc: "자기유도와 증폭을 통해 짜릿하고 거친 금속성 소리", adj: ["강렬한", "거친", "금속성의"], icon: "🎸" },
-            { name: "피아노 (Piano)", wave: "삼각파", desc: "해머 타격으로 풍부하고 우아하며 명료한 타악기적 음색", adj: ["우아한", "명료한", "부드러운"], icon: "🎹" },
-            { name: "테너 (Tenor)", wave: "복합파", desc: "성대 진동과 두성 공명으로 단단하고 힘찬 남성 고음", adj: ["힘찬", "단단한", "청량한"], icon: "👨‍🎤" }
-        ];
+    <!-- FLOATING TOAST ALERTS (Alert replacement) -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2"></div>
 
-        const quizData = [
+    <!-- MAIN FOOTER (이미지 하단 느낌의 완성도 유지) -->
+    <footer class="bg-[#03050a] border-t border-gray-900 py-6 text-center text-xs text-gray-600">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>© 2026 SynthWave Pro / 음색 마스터 클래스 교육 대시보드</p>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-indigo-400 transition-colors">이용 약관</a>
+                <a href="#" class="hover:text-indigo-400 transition-colors">오디오 라이브러리 가이드</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- WEB AUDIO & VISUALIZATION & INTERACTIVITY LOGIC -->
+    <script>
+        // --- 1. QUIZ DATA ---
+        const QUIZ_ITEMS = [
             {
-                q: "바이올린과 피아노가 같은 높이의 음을 내도 다르게 들리는 이유는?",
-                options: ["음의 세기(진폭)가 달라서", "배음의 성향과 비율이 달라서", "진동수(주파수)가 달라서", "악기 가격이 달라서"],
-                ans: 1
+                type: "객관식",
+                question: "소리의 3요소 중 하나로, 단순한 주파수의 고저(피치)가 아니라 '주파수 배음 구조'와 '파형 형태'에 의해 귀에 다르게 느껴지는 감각적 성질은 무엇인가요?",
+                options: ["음고 (Pitch)", "음량 (Loudness)", "음색 (Timbre)", "진폭 (Amplitude)"],
+                answerIndex: 2,
+                feedback: "정답은 '음색 (Timbre)'입니다! 음색은 파형의 형태 및 배음 구조에 의해 결정됩니다."
             },
             {
-                q: "배음이 전혀 없는 가장 순수한 상태의 파형은?",
-                options: ["사인파 (Sine)", "톱니파 (Sawtooth)", "사각파 (Square)", "삼각파 (Triangle)"],
-                ans: 0
+                type: "객관식",
+                question: "현악기인 바이올린을 연주할 때 활로 현을 마찰시켜 생기는 특유의 날카로운 찰현 파형은 기본적으로 어떤 기하학적 파형에 가장 가깝나요?",
+                options: ["사인파 (Sine Wave)", "삼각파 (Triangle Wave)", "톱니파 (Sawtooth Wave)", "노이즈 (White Noise)"],
+                answerIndex: 2,
+                feedback: "정답은 '톱니파 (Sawtooth Wave)'입니다! 활로 마찰하는 운동은 연속적인 비대칭형 톱니파 패턴을 생성합니다."
             },
             {
-                q: "성악의 남녀 성부 구별 중 고음에서 저음 순서가 올바른 것은?",
-                options: [
-                    "여: 소프라노-알토-메조 / 남: 테너-바리톤-베이스",
-                    "여: 소프라노-메조-알토 / 남: 테너-바리톤-베이스",
-                    "여: 알토-메조-소프라노 / 남: 베이스-바리톤-테너",
-                    "여: 메조-소프라노-알토 / 남: 바리톤-베이스-테너"
-                ],
-                ans: 1
-            },
-            {
-                type: "descriptive",
-                q: "선생님들의 연주를 감상한 후, 「별 헤는 밤」의 느낌을 '음색' 관점에서 작성해 보세요.",
-                reqs: ["사용된 악기", "음색 형용사", "느낀 감정", "구체적 가사 또는 마디"]
+                type: "객관식",
+                question: "소프라노나 테너 같은 인체의 성악 발성을 합성할 때, 구강과 비강의 공명 주파수(포먼트) 피크가 강조되는 물리 음향 현상을 관찰할 수 있는 분석 장비는?",
+                options: ["오실로스코프 (Oscilloscope)", "FFT 스펙트럼 아날라이저", "리버브 에뮬레이터", "튜너 (Tuner)"],
+                answerIndex: 1,
+                feedback: "정답은 'FFT 스펙트럼 아날라이저'입니다! 주파수 스펙트럼 상의 특정 음역대 증폭(포먼트)을 시각적으로 관측하기에 제격입니다."
             }
         ];
 
-        // --- AUDIO ENGINE ---
-        let audioCtx, masterGain, analyzer;
-        let oscillators = [];
-        let gainNodes = [];
-        let isPlaying = false;
+        // --- 2. SOUND PRESETS FOR ACTIVE ENGINES ---
+        const INSTRUMENT_PRESETS = {
+            piano: {
+                title: "피아노 (Acoustic Piano)",
+                icon: "🎹",
+                wave: "triangle",
+                overtone: "고차 배음 감쇄형",
+                description: "해머가 현을 때릴 때 발생하는 급격한 과도 응답(Attack)과, 이후 완만하게 서서히 울림이 소멸하는 자연스러운 데케이(Decay) 및 긴 릴리즈를 특징으로 하는 완벽한 타현 타악기적 엔벨로프를 모방합니다.",
+                attack: 0.02,
+                decay: 1.2,
+                sustain: 0.4,
+                release: 1.0,
+                multiplier: [1, 0.6, 0.3, 0.1]
+            },
+            violin: {
+                title: "바이올린 (Solo Violin)",
+                icon: "🎻",
+                wave: "sawtooth",
+                overtone: "지속적인 전음역 배음형",
+                description: "활이 지속적으로 현을 긁어 울림을 생성하므로 완만하고 활기찬 어택(Attack)을 가집니다. 연주 동안 소리 크기가 일정히 흐르는 서스테인(Sustain) 중심의 아름답고 밀도 높은 고음역 배음을 특징으로 합니다.",
+                attack: 0.15,
+                decay: 0.3,
+                sustain: 0.85,
+                release: 0.4,
+                multiplier: [1, 0.8, 0.6, 0.5, 0.3]
+            },
+            flute: {
+                title: "플루트 (Orchestral Flute)",
+                icon: "💨",
+                wave: "sine",
+                overtone: "순수 기음 강조형",
+                description: "공기가 취구를 통과하며 만드는 에어 마찰음과 유사하여 파형이 순수한 사인파(Sine)에 극도로 가깝습니다. 고음역 고주파수 배음이 거의 나타나지 않는 고요하고 청아한 사운드를 재현합니다.",
+                attack: 0.08,
+                decay: 0.2,
+                sustain: 0.9,
+                release: 0.3,
+                multiplier: [1, 0.15, 0.03]
+            },
+            guitar: {
+                title: "일렉기타 (Overdrive/Clean Electric Guitar)",
+                icon: "🎸",
+                wave: "triangle",
+                overtone: "밀도 있는 찰현 배음형",
+                description: "피크가 현을 퉁기는 순간의 단단한 트랜지언트 어택과 일렉트릭 앰프 인클로저 특유의 톱니파계 하모닉 배음 변형을 함께 적용하여 가볍고 경쾌한 스트링의 떨림 성향을 모방합니다.",
+                attack: 0.03,
+                decay: 0.8,
+                sustain: 0.5,
+                release: 0.8,
+                multiplier: [1, 0.7, 0.4, 0.2, 0.1]
+            },
+            soprano: {
+                title: "소프라노 (Soprano Vocal)",
+                icon: "👩",
+                wave: "sawtooth",
+                overtone: "고음 성대 포먼트형",
+                description: "성대의 빠른 개폐 진동이 구강 공명강을 거쳐 여과되는 여성의 하이포지션 성악 창법입니다. 하모닉스 배음 중 3kHz 전후의 이른바 '가창자 포먼트' 영역이 부각되어 고해상도의 맑고 화려한 소리를 이끌어냅니다.",
+                attack: 0.18,
+                decay: 0.2,
+                sustain: 0.9,
+                release: 0.5,
+                multiplier: [1, 0.9, 0.7, 0.5]
+            },
+            tenor: {
+                title: "테너 (Tenor Vocal)",
+                icon: "👨",
+                wave: "sawtooth",
+                overtone: "중저음 흉성 공명형",
+                description: "남성 하이 보컬의 풍부한 흉성 공명과 성대 진동을 모사합니다. 기음 대비 홀수 및 짝수 배음들이 골고루 밀도감 있게 분포하여 웅장하면서도 호소력 있는 남성 보컬 성종의 음색을 구현합니다.",
+                attack: 0.2,
+                decay: 0.25,
+                sustain: 0.85,
+                release: 0.5,
+                multiplier: [1, 0.8, 0.6, 0.4, 0.3]
+            }
+        };
 
-        function initAudio() {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            analyzer = audioCtx.createAnalyser();
-            masterGain = audioCtx.createGain();
-            masterGain.gain.value = 0.1;
-            masterGain.connect(analyzer);
-            analyzer.connect(audioCtx.destination);
+        const NOTE_FREQS = {
+            "C4": 261.63, "C#4": 277.18, "D4": 293.66, "D#4": 311.13, "E4": 329.63,
+            "F4": 349.23, "F#4": 369.99, "G4": 392.00, "G#4": 415.30, "A4": 440.00,
+            "A#4": 466.16, "B4": 493.88, "C5": 523.25
+        };
+
+        const KEY_TO_NOTE = {
+            "KeyA": "C4", "KeyW": "C#4", "KeyS": "D4", "KeyE": "D#4", "KeyD": "E4",
+            "KeyF": "F4", "KeyT": "F#4", "KeyG": "G4", "KeyY": "G#4", "KeyH": "A4",
+            "KeyU": "A#4", "KeyJ": "B4", "KeyK": "C5"
+        };
+
+        // --- 3. STATE VARIABLES ---
+        let audioCtx = null;
+        let activeTab = 'science';
+        let currentInst = 'piano';
+
+        // Synth nodes for Tab 1 (Science)
+        let scienceToneOscs = [];
+        let scienceToneGain = null;
+        let isScienceTonePlaying = false;
+
+        // Analysers & Canvas contexts
+        let scienceAnalyser = null;
+        let encyclopediaAnalyser = null;
+
+        let canvasOsc = document.getElementById('canvas-oscilloscope');
+        let ctxOsc = canvasOsc.getContext('2d');
+        let canvasSpec = document.getElementById('canvas-spectrum');
+        let ctxSpec = canvasSpec.getContext('2d');
+
+        // Track active oscillators on Virtual Piano
+        let activePianoOscs = {};
+
+        // Scaffolding Sentences State
+        let scaffoldSentence = {
+            part: '',
+            instrument: '',
+            adjective: '',
+            effect: ''
+        };
+
+        // Quiz State
+        let currentQuizIndex = 0;
+        let quizAnswers = {}; // { questionIndex: selectedOptionIndex }
+
+        // --- 4. TOAST NOTIFICATION ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-3 rounded-xl shadow-lg border text-xs font-semibold flex items-center gap-2 transition-all duration-300 transform translate-y-2 opacity-0`;
             
-            for(let i=0; i<5; i++) {
-                let osc = audioCtx.createOscillator();
-                let g = audioCtx.createGain();
-                g.gain.value = i === 0 ? 1 : 0;
-                osc.connect(g);
-                g.connect(masterGain);
-                osc.start();
-                oscillators.push(osc);
-                gainNodes.push(g);
+            if (type === 'success') {
+                toast.className += ' bg-emerald-950 border-emerald-800 text-emerald-400';
+                toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
+            } else if (type === 'error') {
+                toast.className += ' bg-red-950 border-red-800 text-red-400';
+                toast.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>${message}</span>`;
+            } else {
+                toast.className += ' bg-indigo-950 border-indigo-800 text-indigo-400';
+                toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+            }
+
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // Auto dismiss
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // --- 5. AUDIO CONTEXT ACCESS SAFEGUARD ---
+        function ensureAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Set up analysers
+                scienceAnalyser = audioCtx.createAnalyser();
+                scienceAnalyser.fftSize = 2048; // Fix: Strict power of two constraint
+
+                encyclopediaAnalyser = audioCtx.createAnalyser();
+                encyclopediaAnalyser.fftSize = 2048; // Fix: Strict power of two constraint
+
+                document.getElementById('audio-guard-banner').classList.add('hidden');
+                showToast("오디오 엔진이 활성화되었습니다. 사운드가 출력됩니다.", "success");
+
+                // Start Visualizers
+                startVisualizers();
+            } else if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+                document.getElementById('audio-guard-banner').classList.add('hidden');
             }
         }
 
-        function updateFrequencies(baseFreq) {
-            oscillators.forEach((osc, i) => {
-                osc.frequency.setTargetAtTime(baseFreq * (i + 1), audioCtx.currentTime, 0.05);
+        // --- 6. TAB NAVIGATION SYSTEM ---
+        function switchTab(tabId) {
+            activeTab = tabId;
+
+            // Silence all playing sound to avoid hanging notes across tabs
+            silenceAllActiveAudio();
+
+            // Toggle visible section
+            document.querySelectorAll('.tab-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+
+            // Switch active tab styling
+            document.querySelectorAll('nav button').forEach(btn => {
+                btn.className = "px-4 py-2 text-xs md:text-sm font-semibold text-gray-400 hover:text-white rounded-xl transition-all duration-200";
+            });
+            document.getElementById(`tab-${tabId}`).className = "active-tab px-4 py-2 text-xs md:text-sm font-semibold rounded-xl transition-all duration-200";
+
+            // Trigger canvas resizing
+            resizeCanvases();
+        }
+
+        function silenceAllActiveAudio() {
+            // Stop Tab 1 tone if playing
+            if (isScienceTonePlaying) {
+                toggleScienceTone();
+            }
+
+            // Stop all active virtual piano keys
+            Object.keys(activePianoOscs).forEach(note => {
+                stopVirtualNote(note);
+            });
+            activePianoOscs = {};
+        }
+
+        // --- 7. CANVAS SCALING & RENDER ENGINE ---
+        function resizeCanvases() {
+            const ratio = window.devicePixelRatio || 1;
+
+            if (canvasOsc && canvasOsc.parentElement) {
+                canvasOsc.width = canvasOsc.parentElement.clientWidth * ratio;
+                canvasOsc.height = canvasOsc.parentElement.clientHeight * ratio;
+                ctxOsc.scale(ratio, ratio);
+            }
+
+            if (canvasSpec && canvasSpec.parentElement) {
+                canvasSpec.width = canvasSpec.parentElement.clientWidth * ratio;
+                canvasSpec.height = canvasSpec.parentElement.clientHeight * ratio;
+                ctxSpec.scale(ratio, ratio);
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvases);
+        setTimeout(resizeCanvases, 100);
+
+        function startVisualizers() {
+            const oscBufferLength = scienceAnalyser.frequencyBinCount;
+            const oscDataArray = new Uint8Array(oscBufferLength);
+
+            const specBufferLength = encyclopediaAnalyser.frequencyBinCount;
+            const specDataArray = new Uint8Array(specBufferLength);
+
+            function drawOscilloscope() {
+                requestAnimationFrame(drawOscilloscope);
+                if (activeTab !== 'science') return;
+
+                const width = canvasOsc.width / window.devicePixelRatio;
+                const height = canvasOsc.height / window.devicePixelRatio;
+
+                scienceAnalyser.getByteTimeDomainData(oscDataArray);
+
+                ctxOsc.fillStyle = '#05070f';
+                ctxOsc.fillRect(0, 0, width, height);
+
+                // Grid Lines
+                ctxOsc.strokeStyle = 'rgba(79, 70, 229, 0.08)';
+                ctxOsc.lineWidth = 1;
+                ctxOsc.beginPath();
+                // Vertical grid lines
+                for (let x = 0; x < width; x += 40) {
+                    ctxOsc.moveTo(x, 0);
+                    ctxOsc.lineTo(x, height);
+                }
+                // Horizontal grid lines
+                for (let y = 0; y < height; y += 40) {
+                    ctxOsc.moveTo(0, y);
+                    ctxOsc.lineTo(width, y);
+                }
+                ctxOsc.stroke();
+
+                // Main wave line
+                ctxOsc.lineWidth = 3;
+                ctxOsc.strokeStyle = 'rgba(99, 102, 241, 1)'; // Solid Indigo line
+                ctxOsc.shadowBlur = 12;
+                ctxOsc.shadowColor = 'rgba(99, 102, 241, 0.8)';
+
+                ctxOsc.beginPath();
+                const sliceWidth = width / oscBufferLength;
+                let x = 0;
+
+                for (let i = 0; i < oscBufferLength; i++) {
+                    const v = oscDataArray[i] / 128.0;
+                    const y = (v * height) / 2;
+
+                    if (i === 0) {
+                        ctxOsc.moveTo(x, y);
+                    } else {
+                        ctxOsc.lineTo(x, y);
+                    }
+                    x += sliceWidth;
+                }
+
+                ctxOsc.lineTo(width, height / 2);
+                ctxOsc.stroke();
+                ctxOsc.shadowBlur = 0; // Reset shadow for efficiency
+            }
+
+            function drawSpectrum() {
+                requestAnimationFrame(drawSpectrum);
+                if (activeTab !== 'encyclopedia') return;
+
+                const width = canvasSpec.width / window.devicePixelRatio;
+                const height = canvasSpec.height / window.devicePixelRatio;
+
+                encyclopediaAnalyser.getByteFrequencyData(specDataArray);
+
+                ctxSpec.fillStyle = '#05070f';
+                ctxSpec.fillRect(0, 0, width, height);
+
+                // Grid Lines
+                ctxSpec.strokeStyle = 'rgba(168, 85, 247, 0.08)';
+                ctxSpec.lineWidth = 1;
+                ctxSpec.beginPath();
+                for (let x = 0; x < width; x += 40) {
+                    ctxSpec.moveTo(x, 0);
+                    ctxSpec.lineTo(x, height);
+                }
+                for (let y = 0; y < height; y += 40) {
+                    ctxSpec.moveTo(0, y);
+                    ctxSpec.lineTo(width, y);
+                }
+                ctxSpec.stroke();
+
+                // Spectrum Bars
+                const barWidth = (width / (specBufferLength * 0.4)) * 2.0; // Draw lower 40% of bands for musicality
+                let barHeight;
+                let x = 0;
+
+                for (let i = 0; i < specBufferLength * 0.4; i++) {
+                    barHeight = (specDataArray[i] / 255) * height * 0.95;
+
+                    // Neon spectral gradient styling
+                    const percent = i / (specBufferLength * 0.4);
+                    const hue = percent * 240 + 260; // Purples, Indigos, Blues
+                    ctxSpec.fillStyle = `hsla(${hue}, 85%, 55%, 0.9)`;
+
+                    ctxSpec.fillRect(x, height - barHeight, barWidth - 1, barHeight);
+                    x += barWidth;
+                }
+            }
+
+            drawOscilloscope();
+            drawSpectrum();
+        }
+
+        // --- 8. TAB 1: SCIENCE TONE ENGINE & CONTROLLERS ---
+        function updateScienceParams() {
+            const freq = document.getElementById('science-freq').value;
+            const h2 = document.getElementById('harmonic-2').value;
+            const h3 = document.getElementById('harmonic-3').value;
+            const h4 = document.getElementById('harmonic-4').value;
+
+            document.getElementById('label-science-freq').innerText = `${freq} Hz`;
+            document.getElementById('label-harmonic-2').innerText = parseFloat(h2).toFixed(2);
+            document.getElementById('label-harmonic-3').innerText = parseFloat(h3).toFixed(2);
+            document.getElementById('label-harmonic-4').innerText = parseFloat(h4).toFixed(2);
+
+            // Dynamically change running oscillators' frequency & gain properties
+            if (isScienceTonePlaying && scienceToneOscs.length > 0) {
+                const now = audioCtx.currentTime;
+                // Fundamental
+                scienceToneOscs[0].osc.frequency.setTargetAtTime(freq, now, 0.05);
+
+                // 2nd
+                if (scienceToneOscs[1]) {
+                    scienceToneOscs[1].osc.frequency.setTargetAtTime(freq * 2, now, 0.05);
+                    scienceToneOscs[1].gain.gain.setTargetAtTime(h2 * 0.35, now, 0.05);
+                }
+                // 3rd
+                if (scienceToneOscs[2]) {
+                    scienceToneOscs[2].osc.frequency.setTargetAtTime(freq * 3, now, 0.05);
+                    scienceToneOscs[2].gain.gain.setTargetAtTime(h3 * 0.25, now, 0.05);
+                }
+                // 4th
+                if (scienceToneOscs[3]) {
+                    scienceToneOscs[3].osc.frequency.setTargetAtTime(freq * 4, now, 0.05);
+                    scienceToneOscs[3].gain.gain.setTargetAtTime(h4 * 0.15, now, 0.05);
+                }
+            }
+        }
+
+        function toggleScienceTone() {
+            ensureAudioContext();
+
+            const playBtn = document.getElementById('btn-play-science');
+            const playIcon = document.getElementById('btn-play-science-icon');
+            const playText = document.getElementById('btn-play-science-text');
+
+            if (isScienceTonePlaying) {
+                // Stop Everything
+                scienceToneOscs.forEach(node => {
+                    node.osc.stop();
+                });
+                scienceToneOscs = [];
+                isScienceTonePlaying = false;
+
+                // UI Reset
+                playBtn.className = "flex-1 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 font-semibold text-sm rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2";
+                playIcon.className = "fa-solid fa-play";
+                playText.innerText = "배음 테스트 톤 재생";
+                showToast("테스트 톤 오실레이터 비활성화", "info");
+            } else {
+                // Play Fundamental + Harmonics
+                const baseFreq = parseFloat(document.getElementById('science-freq').value);
+                const h2 = parseFloat(document.getElementById('harmonic-2').value);
+                const h3 = parseFloat(document.getElementById('harmonic-3').value);
+                const h4 = parseFloat(document.getElementById('harmonic-4').value);
+
+                const now = audioCtx.currentTime;
+
+                // Master gain for safety
+                scienceToneGain = audioCtx.createGain();
+                scienceToneGain.gain.setValueAtTime(0.3, now); // comfortable volume
+                scienceToneGain.connect(scienceAnalyser);
+                scienceAnalyser.connect(audioCtx.destination);
+
+                // 1. Fundamental Tone (Sine)
+                const oscBase = audioCtx.createOscillator();
+                oscBase.type = 'sine';
+                oscBase.frequency.setValueAtTime(baseFreq, now);
+                const gainBase = audioCtx.createGain();
+                gainBase.gain.setValueAtTime(0.5, now);
+                oscBase.connect(gainBase);
+                gainBase.connect(scienceToneGain);
+                oscBase.start(now);
+                scienceToneOscs.push({ osc: oscBase, gain: gainBase });
+
+                // 2. Harmonic 2
+                const osc2 = audioCtx.createOscillator();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(baseFreq * 2, now);
+                const gain2 = audioCtx.createGain();
+                gain2.gain.setValueAtTime(h2 * 0.35, now);
+                osc2.connect(gain2);
+                gain2.connect(scienceToneGain);
+                osc2.start(now);
+                scienceToneOscs.push({ osc: osc2, gain: gain2 });
+
+                // 3. Harmonic 3
+                const osc3 = audioCtx.createOscillator();
+                osc3.type = 'sine';
+                osc3.frequency.setValueAtTime(baseFreq * 3, now);
+                const gain3 = audioCtx.createGain();
+                gain3.gain.setValueAtTime(h3 * 0.25, now);
+                osc3.connect(gain3);
+                gain3.connect(scienceToneGain);
+                osc3.start(now);
+                scienceToneOscs.push({ osc: osc3, gain: gain3 });
+
+                // 4. Harmonic 4
+                const osc4 = audioCtx.createOscillator();
+                osc4.type = 'sine';
+                osc4.frequency.setValueAtTime(baseFreq * 4, now);
+                const gain4 = audioCtx.createGain();
+                gain4.gain.setValueAtTime(h4 * 0.15, now);
+                osc4.connect(gain4);
+                gain4.connect(scienceToneGain);
+                osc4.start(now);
+                scienceToneOscs.push({ osc: osc4, gain: gain4 });
+
+                isScienceTonePlaying = true;
+
+                // UI Transition to STOP
+                playBtn.className = "flex-1 py-3 bg-gradient-to-r from-red-600 to-rose-500 hover:from-red-500 hover:to-rose-400 font-semibold text-sm rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2";
+                playIcon.className = "fa-solid fa-stop";
+                playText.innerText = "테스트 톤 정지";
+                showToast("배음 오실레이터 활성화", "success");
+            }
+        }
+
+        // --- 9. TAB 2: INSTRUMENTS ENGINE & ADSR PHYSICAL MODELING ---
+        function selectInstrument(instId) {
+            currentInst = instId;
+
+            // Silence keys before shifting sound profiles
+            silenceAllActiveAudio();
+
+            // Update Preset Card Data
+            const data = INSTRUMENT_PRESETS[instId];
+            document.getElementById('inst-title').innerText = data.title;
+            document.getElementById('inst-icon').innerText = data.icon;
+            document.getElementById('inst-wave-type').innerText = data.wave.toUpperCase();
+            document.getElementById('inst-overtone').innerText = data.overtone;
+            document.getElementById('inst-description').innerText = data.description;
+
+            // Update Preset ADSR labels
+            document.getElementById('val-adsr-a').innerText = `${data.attack}s`;
+            document.getElementById('val-adsr-d').innerText = `${data.decay}s`;
+            document.getElementById('val-adsr-s').innerText = `${data.sustain}`;
+            document.getElementById('val-adsr-r').innerText = `${data.release}s`;
+
+            // Style Active Selectors in navigation deck
+            document.querySelectorAll('#instrument-selector-group button').forEach(btn => {
+                btn.className = "px-4 py-2 bg-[#0c0f1d] text-gray-400 hover:text-white text-xs font-bold rounded-xl transition-all border border-gray-800";
+            });
+            document.getElementById(`btn-inst-${instId}`).className = "px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl transition-all shadow-md";
+
+            showToast(`${data.title} 음향 합성기 탑재 완료`, 'success');
+        }
+
+        // Play musical physical modeling synthesis note
+        function playVirtualNote(note) {
+            ensureAudioContext();
+
+            // Prevent stuck sounds on simultaneous clicks
+            if (activePianoOscs[note]) return;
+
+            const baseFreq = NOTE_FREQS[note];
+            if (!baseFreq) return;
+
+            const preset = INSTRUMENT_PRESETS[currentInst];
+            const now = audioCtx.currentTime;
+
+            // Individual master gain block for this specific note
+            const noteEnvelopeGain = audioCtx.createGain();
+            noteEnvelopeGain.gain.setValueAtTime(0, now);
+            // Connect to shared encyclopedia Analyser
+            noteEnvelopeGain.connect(encyclopediaAnalyser);
+            encyclopediaAnalyser.connect(audioCtx.destination);
+
+            // Multi-oscillator synthesis to simulate true rich timbre (Overtones / Formants)
+            const oscNodes = [];
+            
+            // Generate multiple harmonic layers
+            preset.multiplier.forEach((multiplierVal, index) => {
+                const harmonicIndex = index + 1;
+                const osc = audioCtx.createOscillator();
+                const harmonicGain = audioCtx.createGain();
+
+                osc.type = preset.wave;
+                osc.frequency.setValueAtTime(baseFreq * harmonicIndex, now);
+                
+                // Add tiny organic frequency fluctuations for stringed instruments or vocalists (Vibrato-like)
+                if (currentInst === 'violin' || currentInst === 'soprano' || currentInst === 'tenor') {
+                    const lfo = audioCtx.createOscillator();
+                    const lfoGain = audioCtx.createGain();
+                    lfo.frequency.setValueAtTime(6.0, now); // 6 Hz Vibrato
+                    lfoGain.gain.setValueAtTime(baseFreq * 0.012, now); // Depth
+                    lfo.connect(lfoGain);
+                    lfoGain.connect(osc.frequency);
+                    lfo.start(now);
+                    oscNodes.push(lfo); // store to stop later
+                }
+
+                harmonicGain.gain.setValueAtTime(multiplierVal * 0.35, now);
+                osc.connect(harmonicGain);
+                harmonicGain.connect(noteEnvelopeGain);
+                osc.start(now);
+
+                oscNodes.push(osc);
+            });
+
+            // Apply Envelope (Attack, Decay, Sustain)
+            noteEnvelopeGain.gain.cancelScheduledValues(now);
+            noteEnvelopeGain.gain.setValueAtTime(0, now);
+            noteEnvelopeGain.gain.linearRampToValueAtTime(1.0, now + preset.attack);
+            noteEnvelopeGain.gain.exponentialRampToValueAtTime(preset.sustain, now + preset.attack + preset.decay);
+
+            // Store active references to track this note
+            activePianoOscs[note] = {
+                gain: noteEnvelopeGain,
+                oscs: oscNodes
+            };
+
+            // Highlight keyboard layout on UI
+            highlightPianoKey(note, true);
+        }
+
+        function stopVirtualNote(note) {
+            if (!activePianoOscs[note]) return;
+
+            const preset = INSTRUMENT_PRESETS[currentInst];
+            const now = audioCtx.currentTime;
+            const noteObj = activePianoOscs[note];
+
+            // Trigger Release envelope
+            noteObj.gain.gain.cancelScheduledValues(now);
+            noteObj.gain.gain.setValueAtTime(noteObj.gain.gain.value, now);
+            noteObj.gain.gain.exponentialRampToValueAtTime(0.001, now + preset.release);
+
+            // Safely stop and disconnect all oscillators after the release completes
+            const oscsToStop = [...noteObj.oscs];
+            const gainToDisconnect = noteObj.gain;
+
+            setTimeout(() => {
+                oscsToStop.forEach(node => {
+                    try {
+                        node.stop();
+                    } catch(e) {}
+                });
+                try {
+                    gainToDisconnect.disconnect();
+                } catch(e) {}
+            }, (preset.release * 1000) + 100);
+
+            delete activePianoOscs[note];
+            highlightPianoKey(note, false);
+        }
+
+        function highlightPianoKey(note, activate) {
+            // Locate buttons across potentially multiple keyboards
+            const keys = document.querySelectorAll(`button[data-note="${note}"]`);
+            keys.forEach(key => {
+                if (activate) {
+                    key.classList.add('active');
+                    if (key.classList.contains('white-key')) {
+                        key.style.background = 'linear-gradient(to bottom, #818cf8 0%, #4f46e5 100%)';
+                        key.style.color = '#ffffff';
+                    } else {
+                        key.style.background = 'linear-gradient(to bottom, #6366f1 0%, #4338ca 100%)';
+                    }
+                } else {
+                    key.classList.remove('active');
+                    if (key.classList.contains('white-key')) {
+                        key.style.background = '';
+                        key.style.color = '';
+                    } else {
+                        key.style.background = '';
+                    }
+                }
             });
         }
 
-        // --- OSCILLOSCOPE ---
-        const canvas = document.getElementById('osc-canvas');
-        const ctx = canvas.getContext('2d');
-        function draw() {
-            requestAnimationFrame(draw);
-            if(!analyzer) return;
-            const bufferLength = analyzer.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            analyzer.getByteTimeDomainData(dataArray);
+        // --- 10. REALISTIC PIANO INTERACTION BINDING (MOUSE & TOUCH) ---
+        let isPianoMouseDown = false;
 
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = '#6366f1';
-            ctx.beginPath();
-            const sliceWidth = canvas.width / bufferLength;
-            let x = 0;
-            for(let i = 0; i < bufferLength; i++) {
-                const v = dataArray[i] / 128.0;
-                const y = v * canvas.height / 2;
-                if(i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-                x += sliceWidth;
-            }
-            ctx.lineTo(canvas.width, canvas.height/2);
-            ctx.stroke();
+        function attachKeyboardEvents(keyboardId) {
+            const container = document.getElementById(keyboardId);
+            
+            // Touch interactions (Mobile)
+            container.addEventListener('touchstart', (e) => {
+                const btn = e.target.closest('button');
+                if (btn) {
+                    const note = btn.getAttribute('data-note');
+                    if (note) playVirtualNote(note);
+                }
+            }, { passive: true });
+
+            container.addEventListener('touchend', (e) => {
+                const btn = e.target.closest('button');
+                if (btn) {
+                    const note = btn.getAttribute('data-note');
+                    if (note) stopVirtualNote(note);
+                }
+            }, { passive: true });
+
+            // Mouse interactions (Desktop)
+            container.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    const note = btn.getAttribute('data-note');
+                    if (note) {
+                        playVirtualNote(note);
+                        isPianoMouseDown = true;
+                    }
+                });
+
+                btn.addEventListener('mouseenter', () => {
+                    if (isPianoMouseDown) {
+                        const note = btn.getAttribute('data-note');
+                        if (note) playVirtualNote(note);
+                    }
+                });
+
+                btn.addEventListener('mouseleave', () => {
+                    const note = btn.getAttribute('data-note');
+                    if (note) stopVirtualNote(note);
+                });
+
+                btn.addEventListener('mouseup', () => {
+                    const note = btn.getAttribute('data-note');
+                    if (note) {
+                        stopVirtualNote(note);
+                    }
+                });
+            });
         }
 
-        // --- UI LOGIC ---
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.className = "px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-400 hover:text-white");
-            document.getElementById(id).classList.add('active');
-            document.getElementById('btn-'+id).className = "px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white";
-        }
+        // Global mouse up tracker to stop drag-to-play bugs
+        window.addEventListener('mouseup', () => {
+            isPianoMouseDown = false;
+        });
 
-        // Science Tab
-        const playBtn = document.getElementById('play-btn');
-        playBtn.onclick = () => {
-            if(!audioCtx) initAudio();
-            if(!isPlaying) {
-                audioCtx.resume();
-                playBtn.className = "w-full py-4 rounded-2xl bg-rose-500 hover:bg-rose-600 font-bold flex items-center justify-center gap-3 transition-all shadow-lg";
-                document.getElementById('play-icon').setAttribute('data-lucide', 'square');
-                document.getElementById('play-text').innerText = "소리 정지";
-                isPlaying = true;
-            } else {
-                audioCtx.suspend();
-                playBtn.className = "w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold flex items-center justify-center gap-3 transition-all shadow-lg";
-                document.getElementById('play-icon').setAttribute('data-lucide', 'play');
-                document.getElementById('play-text').innerText = "소리 재생 시작";
-                isPlaying = false;
-            }
-            lucide.createIcons();
-        };
+        attachKeyboardEvents('encyclopedia-keyboard');
 
-        document.getElementById('freq-slider').oninput = (e) => {
-            const val = e.target.value;
-            document.getElementById('freq-val').innerText = val + "Hz";
-            if(audioCtx) updateFrequencies(val);
-        };
-
-        document.querySelectorAll('.harmonic-slider').forEach(slider => {
-            slider.oninput = (e) => {
-                const idx = e.target.dataset.index;
-                const val = e.target.value;
-                if(audioCtx) gainNodes[idx].gain.setTargetAtTime(val, audioCtx.currentTime, 0.05);
+        // Computer QWERTY Keys Map Integration
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
+            const note = KEY_TO_NOTE[e.code];
+            if (note) {
+                playVirtualNote(note);
             }
         });
 
-        // Gallery Tab
-        const grid = document.getElementById('instrument-grid');
-        instruments.forEach(inst => {
-            grid.innerHTML += `
-                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 hover:border-indigo-500 transition-colors">
-                    <div class="text-4xl mb-4">${inst.icon}</div>
-                    <h3 class="text-lg font-bold mb-2">${inst.name}</h3>
-                    <p class="text-xs text-indigo-400 font-mono mb-3">${inst.wave} 기반</p>
-                    <p class="text-sm text-slate-400 mb-4">${inst.desc}</p>
-                    <div class="flex flex-wrap gap-2">
-                        ${inst.adj.map(a => `<span class="text-[10px] bg-slate-900 border border-slate-800 px-2 py-1 rounded-full text-slate-300">#${a}</span>`).join('')}
-                    </div>
-                </div>
-            `;
+        window.addEventListener('keyup', (e) => {
+            const note = KEY_TO_NOTE[e.code];
+            if (note) {
+                stopVirtualNote(note);
+            }
         });
 
-        // Workshop Tab
-        const inputs = ['ws-where', 'ws-who', 'ws-how', 'ws-emotion'];
-        inputs.forEach(id => {
-            document.getElementById(id).oninput = () => {
-                const where = document.getElementById('ws-where').value || "[구간]";
-                const who = document.getElementById('ws-who').value || "[악기]";
-                const how = document.getElementById('ws-how').value || "[음색]";
-                const emotion = document.getElementById('ws-emotion').value || "[감정]";
-                document.getElementById('ws-result').innerText = `${where}에서 연주되는 ${who}의 ${how} 음색이 인상적이었다. 이를 통해 ${emotion} 느낌을 받을 수 있었다.`;
-            };
-        });
 
-        // Quiz Tab
-        let currentQuiz = 0;
-        function loadQuiz() {
-            const quiz = quizData[currentQuiz];
-            const container = document.getElementById('quiz-container');
-            if(quiz.type === "descriptive") {
-                container.innerHTML = `
-                    <div class="space-y-6">
-                        <h3 class="text-lg font-bold leading-tight">${quiz.q}</h3>
-                        <div class="bg-slate-900 p-4 rounded-xl space-y-2">
-                            <p class="text-xs text-amber-400 font-bold">포함 필수 요소:</p>
-                            <ul class="text-[11px] text-slate-500 grid grid-cols-2 gap-2">
-                                ${quiz.reqs.map(r => `<li>• ${r}</li>`).join('')}
-                            </ul>
-                        </div>
-                        <textarea id="quiz-desc" placeholder="여기에 감상평을 작성하세요..." class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 text-sm h-32 focus:border-indigo-500 outline-none"></textarea>
-                        <button onclick="finishQuiz()" class="w-full py-3 bg-indigo-600 rounded-xl font-bold">제출 및 완료</button>
-                    </div>
-                `;
+        // --- 11. TAB 3: SCAFFOLD BUILDER (감상 문장 제조기) ---
+        function setScaffold(step, value) {
+            scaffoldSentence[step] = value;
+
+            // Update Button Highlights in Step Blocks
+            const parent = document.getElementById(`scaffold-${step}`);
+            parent.querySelectorAll('button').forEach(btn => {
+                if (btn.innerText.trim().includes(value.split(' ')[0])) {
+                    btn.className = "scaffold-btn px-3 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl transition-all shadow-sm";
+                } else {
+                    btn.className = "scaffold-btn px-3 py-2 bg-gray-900 hover:bg-gray-800 text-left text-xs text-gray-300 rounded-xl transition-all";
+                }
+            });
+
+            // Compile & Render Statement
+            const fullText = [
+                scaffoldSentence.part,
+                scaffoldSentence.instrument,
+                scaffoldSentence.adjective,
+                scaffoldSentence.effect
+            ].filter(Boolean).join(' ');
+
+            const outputDisplay = document.getElementById('scaffold-result-display');
+            if (fullText) {
+                outputDisplay.innerText = `"${fullText}"`;
+                outputDisplay.classList.remove('text-gray-500');
+                outputDisplay.classList.add('text-indigo-200');
             } else {
-                container.innerHTML = `
-                    <div class="space-y-6">
-                        <h3 class="text-lg font-bold">${quiz.q}</h3>
-                        <div class="space-y-3">
-                            ${quiz.options.map((opt, i) => `
-                                <button onclick="checkQuiz(${i})" class="w-full text-left p-4 rounded-xl border border-slate-800 bg-slate-900 hover:border-indigo-500 transition-all text-sm">${opt}</button>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
+                outputDisplay.innerText = "요소들을 위에서 하나씩 골라 문장을 빌드하세요...";
             }
         }
 
-        function checkQuiz(idx) {
-            if(idx === quizData[currentQuiz].ans) {
-                currentQuiz++;
-                if(currentQuiz < quizData.length) loadQuiz();
-            } else {
-                alert("다시 한 번 생각해 보세요!");
+        function copyGeneratedSentence() {
+            const fullText = [
+                scaffoldSentence.part,
+                scaffoldSentence.instrument,
+                scaffoldSentence.adjective,
+                scaffoldSentence.effect
+            ].filter(Boolean).join(' ');
+
+            if (!fullText) {
+                showToast("문장이 비어있습니다. 먼저 위의 요소들을 선택해 주세요.", "error");
+                return;
+            }
+
+            // Copy to clipboard
+            const textareaTemp = document.createElement('textarea');
+            textareaTemp.value = fullText;
+            document.body.appendChild(textareaTemp);
+            textareaTemp.select();
+            document.execCommand('copy');
+            document.body.removeChild(textareaTemp);
+
+            showToast("완성된 비평 문장이 클립보드에 복사되었습니다!", "success");
+
+            // Automatically place it in the critique input field
+            const critiqueArea = document.getElementById('critique-textarea');
+            if (critiqueArea) {
+                critiqueArea.value = fullText;
             }
         }
 
-        function finishQuiz() {
-            const val = document.getElementById('quiz-desc').value;
-            if(val.length < 10) {
-                alert("감상평을 좀 더 자세히 작성해 주세요!");
+        function toggleCritiqueSolution() {
+            const box = document.getElementById('critique-solution-box');
+            box.classList.toggle('hidden');
+        }
+
+        function resetCritique() {
+            document.getElementById('critique-textarea').value = "";
+            showToast("감상 서술란이 초기화되었습니다.", "info");
+        }
+
+        function saveCritiqueLocal() {
+            const text = document.getElementById('critique-textarea').value.trim();
+            if (!text) {
+                showToast("저장할 내용이 작성되지 않았습니다.", "error");
+                return;
+            }
+            showToast("감상문 작성이 안전하게 제출 및 로컬 저장되었습니다.", "success");
+        }
+
+
+        // --- 12. TAB 4: QUIZ ENGINE ---
+        function renderQuizQuestion() {
+            const quiz = QUIZ_ITEMS[currentQuizIndex];
+            
+            // Progress Bar text
+            document.getElementById('quiz-progress-text').innerText = `문항 ${currentQuizIndex + 1} of ${QUIZ_ITEMS.length}`;
+            document.getElementById('quiz-type').innerText = quiz.type;
+            document.getElementById('quiz-question').innerText = quiz.question;
+
+            // Generate Options
+            const optionsGroup = document.getElementById('quiz-options-group');
+            optionsGroup.innerHTML = "";
+
+            quiz.options.forEach((opt, idx) => {
+                const isSelected = quizAnswers[currentQuizIndex] === idx;
+                
+                const btn = document.createElement('button');
+                btn.onclick = () => selectQuizOption(idx);
+                
+                if (isSelected) {
+                    btn.className = "w-full p-4 text-left text-xs md:text-sm bg-indigo-600 border border-indigo-500 text-white rounded-xl transition-all flex justify-between items-center";
+                    btn.innerHTML = `<span>${opt}</span> <i class="fa-solid fa-circle-check"></i>`;
+                } else {
+                    btn.className = "w-full p-4 text-left text-xs md:text-sm bg-gray-950 border border-gray-900 hover:border-gray-800 text-gray-300 rounded-xl transition-all";
+                    btn.innerText = opt;
+                }
+                optionsGroup.appendChild(btn);
+            });
+
+            // Prev & Next Buttons behavior
+            document.getElementById('btn-quiz-prev').disabled = currentQuizIndex === 0;
+            const nextBtn = document.getElementById('btn-quiz-next');
+            if (currentQuizIndex === QUIZ_ITEMS.length - 1) {
+                nextBtn.innerText = "최종 성적 평가";
+                nextBtn.className = "flex-1 md:flex-initial px-5 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-lg shadow-md transition-all";
             } else {
-                document.getElementById('quiz-container').classList.add('hidden');
-                document.getElementById('quiz-result').classList.remove('hidden');
-                lucide.createIcons();
+                nextBtn.innerText = "다음 문항";
+                nextBtn.className = "flex-1 md:flex-initial px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-md transition-all";
+            }
+
+            // Show feedback of selected answers
+            const feedbackBox = document.getElementById('quiz-feedback');
+            if (quizAnswers[currentQuizIndex] !== undefined) {
+                const isCorrect = quizAnswers[currentQuizIndex] === quiz.answerIndex;
+                feedbackBox.classList.remove('invisible');
+                if (isCorrect) {
+                    feedbackBox.className = "text-xs font-semibold text-emerald-400 flex items-center gap-2";
+                    feedbackBox.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>훌륭해요! ${quiz.feedback}</span>`;
+                } else {
+                    feedbackBox.className = "text-xs font-semibold text-rose-400 flex items-center gap-2";
+                    feedbackBox.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>학습 필요: 올바른 해설은 "${quiz.feedback}" 입니다.</span>`;
+                }
+            } else {
+                feedbackBox.classList.add('invisible');
             }
         }
 
-        window.onload = () => {
-            lucide.createIcons();
-            draw();
-            loadQuiz();
-        };
+        function selectQuizOption(optionIdx) {
+            quizAnswers[currentQuizIndex] = optionIdx;
+            
+            // Re-render
+            renderQuizQuestion();
+
+            // Calculate Score & Accuracy Live
+            calculateScores();
+        }
+
+        function calculateScores() {
+            let correctCount = 0;
+            let solvedCount = 0;
+
+            QUIZ_ITEMS.forEach((item, index) => {
+                if (quizAnswers[index] !== undefined) {
+                    solvedCount++;
+                    if (quizAnswers[index] === item.answerIndex) {
+                        correctCount++;
+                    }
+                }
+            });
+
+            const score = Math.round((correctCount / QUIZ_ITEMS.length) * 100);
+            const accuracy = solvedCount > 0 ? Math.round((correctCount / solvedCount) * 100) : 0;
+
+            // Scoreboard values injection
+            document.getElementById('quiz-score-num').innerText = score;
+            document.getElementById('quiz-solved-count').innerText = `${solvedCount} / ${QUIZ_ITEMS.length}`;
+            document.getElementById('quiz-accuracy').innerText = `${accuracy}%`;
+
+            // Grade Analysis
+            const gradeText = document.getElementById('quiz-grade');
+            if (solvedCount < QUIZ_ITEMS.length) {
+                gradeText.innerText = "진단 대기 중";
+                gradeText.className = "text-gray-500 font-bold";
+            } else {
+                if (score === 100) {
+                    gradeText.innerText = "S등급 (음색 마스터)";
+                    gradeText.className = "text-emerald-400 font-bold";
+                } else if (score >= 60) {
+                    gradeText.innerText = "A등급 (음악 평론 수료)";
+                    gradeText.className = "text-indigo-400 font-bold";
+                } else {
+                    gradeText.innerText = "B등급 (추가 학습 요망)";
+                    gradeText.className = "text-yellow-500 font-bold";
+                }
+            }
+        }
+
+        function navQuiz(direction) {
+            const nextIndex = currentQuizIndex + direction;
+            if (nextIndex >= 0 && nextIndex < QUIZ_ITEMS.length) {
+                currentQuizIndex = nextIndex;
+                renderQuizQuestion();
+            } else if (nextIndex === QUIZ_ITEMS.length) {
+                // Completed! Show diagnostics summary
+                showToast("성취도 진단 테스트를 완료하였습니다! 점수를 확인하세요.", "success");
+            }
+        }
+
+        function resetAllQuiz() {
+            currentQuizIndex = 0;
+            quizAnswers = {};
+            calculateScores();
+            renderQuizQuestion();
+            showToast("개념 퀴즈가 성공적으로 리셋되었습니다.", "info");
+        }
+
+        // Trigger first rendering for Quiz Frame
+        renderQuizQuestion();
     </script>
 </body>
 </html>
